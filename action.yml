@@ -11,7 +11,7 @@ runs:
     - name: Run AI App
       shell: bash
       run: |
-        mkdir generated_output
+        mkdir -p input generated_output
         echo "Running container..."
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
