@@ -12,7 +12,7 @@ runs:
       shell: bash
       run: |
         mkdir generated_output
-        echo "✅ Running container..."
+        echo "Running container..."
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
