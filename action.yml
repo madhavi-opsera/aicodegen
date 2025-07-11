@@ -8,27 +8,17 @@ branding:
 runs:
   using: "composite"
   steps:
-    - name: Authenticate to AWS via OIDC
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::791544005398:role/mcp-github-role
-        aws-region: us-east-1
-    - name: Login to ECR
-      shell: bash
-      run: |
-        aws ecr get-login-password --region us-east-1| docker login --username AWS --password-stdin 791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide
     - name: Run AI App
       shell: bash
       run: |
-        mkdir -p input_temp generated_output
+        mkdir generated_output
         echo "✅ Running container..."
-        docker pull 791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide:latest
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
           -v "${{ github.workspace }}/input:/app/input" \
           -v "${{ github.workspace }}/generated_output:/app/output" \
-          791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide:latest
+          ghcr.io/madhavi-opsera/aicoder:2.0
 
     - name: Upload Generated Output
       uses: actions/upload-artifact@v4
