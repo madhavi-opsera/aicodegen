@@ -13,7 +13,6 @@ runs:
       with:
         role-to-assume: arn:aws:iam::791544005398:role/mcp-github-role
         aws-region: us-east-1
-        audience: sts.amazonaws.com
     - name: Login to ECR
       shell: bash
       run: |
