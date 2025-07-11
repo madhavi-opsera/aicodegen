@@ -11,11 +11,11 @@ runs:
     - name: Authenticate to AWS via OIDC
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-        aws-region: ${{ REGION }}
+        role-to-assume: ${{ secrets.ROLE_ARN }}
+        aws-region: us-east-1
     - name: Login to ECR
       run: |
-        aws ecr get-login-password --region ${{ REGION }}| docker login \
+        aws ecr get-login-password --region us-east-1| docker login \
           --username AWS \
           --password-stdin 791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide
     - name: Run AI App
