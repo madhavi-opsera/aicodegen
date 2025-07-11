@@ -7,13 +7,21 @@ branding:
 
 runs:
   using: "composite"
+  permissions:
+    id-token: write  # ✅ Needed for OIDC
+    contents: read
   steps:
-    - name: Login to GHCR
-      shell: bash
-      env:
-        GHCR_TOKEN: ${{ github.token }}
+    - name: Authenticate to AWS via OIDC
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+        aws-region: ${{ REGION }}
+
+    - name: Login to ECR
       run: |
-        echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        aws ecr get-login-password --region ${{ REGION }}| docker login \
+          --username AWS \
+          --password-stdin 791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide
 
     - name: Run AI App
       shell: bash
