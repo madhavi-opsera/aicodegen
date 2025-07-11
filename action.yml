@@ -14,6 +14,7 @@ runs:
         role-to-assume: arn:aws:iam::791544005398:role/mcp-github-role
         aws-region: us-east-1
     - name: Login to ECR
+      shell: bash
       run: |
         aws ecr get-login-password --region us-east-1| docker login \
           --username AWS \
