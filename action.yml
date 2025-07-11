@@ -7,11 +7,6 @@ branding:
 
 runs:
   using: "composite"
-  environment:
-    name: dev
-  permissions:
-    id-token: write  # ✅ Needed for OIDC
-    contents: read
   steps:
     - name: Authenticate to AWS via OIDC
       uses: aws-actions/configure-aws-credentials@v2
