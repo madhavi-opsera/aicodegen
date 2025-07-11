@@ -1,23 +1,35 @@
 name: "AI Codegenit"
 description: "Run AI check"
+author: "madhavi-opsera"
+branding:
+  icon: "zap"
+  color: "purple"
+
 runs:
   using: "composite"
   steps:
     - name: Login to GHCR
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-    - name: Run MCP App
+      shell: bash
+      env:
+        GHCR_TOKEN: ${{ github.token }}
       run: |
+        echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Run AI App
+      shell: bash
+      run: |
+        mkdir -p input_temp generated_output
+        echo "✅ Running container..."
         docker pull ghcr.io/madhavi-opsera/aicoder:latest
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
-          -v ${{ github.workspace }}/input_temp:/app/input \
-          -v ${{ github.workspace }}/generated_output:/app/output \
+          -v "${{ github.workspace }}/input:/app/input" \
+          -v "${{ github.workspace }}/generated_output:/app/output" \
           ghcr.io/madhavi-opsera/aicoder:latest
-          
+
     - name: Upload Generated Output
       uses: actions/upload-artifact@v4
       with:
-        name: Run MCP App
+        name: generated_output
         path: generated_output/
