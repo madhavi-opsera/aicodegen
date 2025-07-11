@@ -9,7 +9,7 @@ runs:
   using: "composite"
   steps:
     - name: Authenticate to AWS via OIDC
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::791544005398:role/mcp-github-role
         aws-region: us-east-1
