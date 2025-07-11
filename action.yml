@@ -1,4 +1,4 @@
-name: "AI Codegen"
+name: "AI Codegenit"
 description: "Run AI check"
 runs:
   using: "composite"
