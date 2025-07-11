@@ -1,5 +1,5 @@
-name: "Secure MCP Runner"
-description: "Run MCP with GHCR + license check"
+name: "AI Codegen"
+description: "Run AI check"
 runs:
   using: "composite"
   steps:
