@@ -7,6 +7,8 @@ branding:
 
 runs:
   using: "composite"
+  environment:
+    name: dev
   permissions:
     id-token: write  # ✅ Needed for OIDC
     contents: read
@@ -28,13 +30,13 @@ runs:
       run: |
         mkdir -p input_temp generated_output
         echo "✅ Running container..."
-        docker pull ghcr.io/madhavi-opsera/aicoder:2.0
+        docker pull 791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide:latest
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
           -v "${{ github.workspace }}/input:/app/input" \
           -v "${{ github.workspace }}/generated_output:/app/output" \
-          ghcr.io/madhavi-opsera/aicoder:2.0
+          791544005398.dkr.ecr.us-east-1.amazonaws.com/mcp-codeglide:latest
 
     - name: Upload Generated Output
       uses: actions/upload-artifact@v4
