@@ -1,0 +1,23 @@
+name: "Secure MCP Runner"
+description: "Run MCP with GHCR + license check"
+runs:
+  using: "composite"
+  steps:
+    - name: Login to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Run MCP App
+      run: |
+        docker pull ghcr.io/madhavi-opsera/aicoder:latest
+        docker run --rm \
+          -e GITHUB_REPOSITORY="${{ github.repository }}" \
+          -e GITHUB_ACTOR="${{ github.actor }}" \
+          -v ${{ github.workspace }}/input_temp:/app/input \
+          -v ${{ github.workspace }}/generated_output:/app/output \
+          ghcr.io/madhavi-opsera/aicoder:latest
+          
+    - name: Upload Generated Output
+      uses: actions/upload-artifact@v4
+      with:
+        name: Run MCP App
+        path: generated_output/
