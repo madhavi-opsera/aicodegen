@@ -20,7 +20,7 @@ runs:
       run: |
         mkdir -p input_temp generated_output
         echo "✅ Running container..."
-        docker pull ghcr.io/madhavi-opsera/aicoder:latest
+        docker pull ghcr.io/madhavi-opsera/aicoder:2.0
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
