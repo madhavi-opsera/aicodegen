@@ -16,7 +16,7 @@ runs:
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
-          -e GITHUB_ACTIONS=$GITHUB_ACTIONS
+          -e GITHUB_ACTIONS=$GITHUB_ACTIONS \
           -v "${{ github.workspace }}/input:/app/input" \
           -v "${{ github.workspace }}/generated_output:/app/output" \
           ghcr.io/madhavi-opsera/aicoder:latest
