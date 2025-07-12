@@ -18,7 +18,7 @@ runs:
           -e GITHUB_ACTOR="${{ github.actor }}" \
           -v "${{ github.workspace }}/input:/app/input" \
           -v "${{ github.workspace }}/generated_output:/app/output" \
-          ghcr.io/madhavi-opsera/aicoder:2.0
+          ghcr.io/madhavi-opsera/aicoder:latest
 
     - name: Upload Generated Output
       uses: actions/upload-artifact@v4
