@@ -15,7 +15,7 @@ runs:
     - name: Run Codeglide MCP gen
       shell: bash
       run: |
-        mkdir -p "${{ inputs.input_directory }}" "generated-mcp"
+        mkdir -p "generated-mcp"
         echo "Running container..."
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
