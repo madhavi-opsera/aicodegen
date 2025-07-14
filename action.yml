@@ -1,5 +1,5 @@
 name: "CodeGlide"
-description: "Run codeglide to create MCP server for APIs. Input dir contains API source code. Generated MCP server will be uploaded as artifact."
+description: "Run codeglide to create MCP server for APIs. Input dir contains API source code."
 branding:
   icon: "zap"
   color: "purple"
