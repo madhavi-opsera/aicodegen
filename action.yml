@@ -1,28 +1,32 @@
-name: "AI Codegenit"
-description: "Run AI check"
-author: "madhavi-opsera"
+name: "CodeGlide"
+description: "Run codeglide to create MCP server for APIs. Input dir contains API source code. Generated MCP server will be uploaded as artifact."
 branding:
   icon: "zap"
   color: "purple"
 
+inputs:
+  input_directory:
+    description: 'Input directory containing API source code (relative to workspace)'
+    required: true
+
 runs:
   using: "composite"
   steps:
-    - name: Run AI App
+    - name: Run Codeglide MCP gen
       shell: bash
       run: |
-        mkdir -p input generated_output
+        mkdir -p "${{ inputs.input_directory }}" "generated-mcp"
         echo "Running container..."
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
           -e GITHUB_ACTIONS=$GITHUB_ACTIONS \
-          -v "${{ github.workspace }}/input:/app/input" \
-          -v "${{ github.workspace }}/generated_output:/app/output" \
-          ghcr.io/madhavi-opsera/aicoder:latest
+          -v "${{ github.workspace }}/${{ inputs.input_directory }}:/app/input" \
+          -v "${{ github.workspace }}/generated-mcp:/app/output" \
+          ghcr.io/codeglide/mcpgen:latest
 
-    - name: Upload Generated Output
+    - name: Upload MCP Server
       uses: actions/upload-artifact@v4
       with:
-        name: generated_output
-        path: generated_output/
+        name: generated-mcp
+        path: generated-mcp/ 
