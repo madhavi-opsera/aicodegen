@@ -1,13 +1,14 @@
 name: "CodeGlide"
-description: "Run codeglide to create MCP server for APIs. Input directory contains API source code."
+description: "Run codeglide to create MCP server for APIs. Input dir contains API source code. Generated MCP server will be uploaded as artifact."
 branding:
   icon: "zap"
   color: "purple"
 
 inputs:
   input_directory:
-    description: 'Input directory containing API source code (relative to workspace)'
-    required: true
+    description: 'Input directory containing API source code (relative to workspace). Defaults to project root.'
+    required: false
+    default: '.'
 
 runs:
   using: "composite"
@@ -17,11 +18,19 @@ runs:
       run: |
         mkdir -p "generated-mcp"
         echo "Running container..."
+        
+        # Handle directory mounting (defaults to project root)
+        if [[ "${{ inputs.input_directory }}" == "." ]]; then
+          INPUT_PATH="${{ github.workspace }}"
+        else
+          INPUT_PATH="${{ github.workspace }}/${{ inputs.input_directory }}"
+        fi
+        
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
           -e GITHUB_ACTIONS=$GITHUB_ACTIONS \
-          -v "${{ github.workspace }}/${{ inputs.input_directory }}:/app/input" \
+          -v "$INPUT_PATH:/app/input" \
           -v "${{ github.workspace }}/generated-mcp:/app/output" \
           ghcr.io/codeglide/mcpgen:latest
 
