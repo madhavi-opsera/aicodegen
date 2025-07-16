@@ -1,7 +1,7 @@
 name: "Snap Gen"
 description: "Run codeglide to create MCP server for APIs. Input dir contains API source code."
 branding:
-  icon: "green"
+  icon: "chevron-right"
   color: "purple"
 
 inputs:
