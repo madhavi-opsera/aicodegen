@@ -42,6 +42,8 @@ runs:
     - name: Create PR
       if: ${{ inputs.create_pr }}
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         # Configure git with GitHub Actions identity
         git config --global user.name "snapgn-github-actions[bot]"
