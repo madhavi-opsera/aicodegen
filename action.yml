@@ -43,6 +43,10 @@ runs:
       if: ${{ inputs.create_pr }}
       shell: bash
       run: |
+        # Configure git with GitHub Actions identity
+        git config --global user.name "snapgn-github-actions[bot]"
+        git config --global user.email "snapgn-github-actions[bot]@users.noreply.github.com"
+
         # Create new branch
         BRANCH_NAME="feat/mcp-server-update-$(date +%Y%m%d-%H%M%S)"
         git checkout -b $BRANCH_NAME
