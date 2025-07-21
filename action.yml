@@ -53,21 +53,28 @@ runs:
         GH_TOKEN: ${{ github.token }}
       run: |
         # Configure git with GitHub Actions identity
-        git config --global user.name "snapgen-github-actions[bot]"
-        git config --global user.email "snapgen-github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "snapgen-[bot]"
+        git config --global user.email "snapgen-[bot]@users.noreply.github.com"
 
         # Create new branch
         BRANCH_NAME="feat/mcp-server-updated/$(date +%Y-%m-%d)--$(date +%H-%M-%S)"
         git checkout -b $BRANCH_NAME
         
+        # Determine MCP directory path based on input directory
+        if [[ "${{ inputs.input_directory }}" == "." ]] || [[ -z "${{ inputs.input_directory }}" ]]; then
+          MCP_DIR="MCP"
+        else
+          MCP_DIR="${{ inputs.input_directory }}/MCP"
+        fi
+        
         # Create MCP directory if it doesn't exist
-        mkdir -p MCP/MCPServer
+        mkdir -p "$MCP_DIR"
         
         # Copy generated files
-        cp -r generated-mcp/* MCP/MCPServer/
+        cp -r generated-mcp/* "$MCP_DIR/"
         
         # Commit and push
-        git add MCP/MCPServer
+        git add "$MCP_DIR"
         git commit -m "feat: snapgen Auto-generated MCP server code
 
         Triggered by: @${{ github.actor }}"
