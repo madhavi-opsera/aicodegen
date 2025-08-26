@@ -9,6 +9,10 @@ inputs:
     description: 'Input directory containing API source code (relative to workspace). Defaults to project root.'
     required: false
     default: '.'
+  custom_headers:
+    description: 'Custom headers to include in all API requests (JSON format, e.g., {"Authorization": "Bearer token", "X-API-Key": "key"})'
+    required: false
+    default: '{}'
   create_pr:
     description: 'Create PR with generated code. Falls back to artifact upload if no push permissions.'
     required: false
@@ -35,7 +39,10 @@ runs:
         else
           INPUT_PATH="${{ github.workspace }}/${{ inputs.input_directory }}"
         fi
-        
+        echo "DEBUG: Raw input = '${{ inputs.custom_headers }}'"
+        echo "DEBUG: Input with escaped chars = $(printf '%q' '${{ inputs.custom_headers }}')"
+        echo "DEBUG: Character count = $(echo -n '${{ inputs.custom_headers }}' | wc -c)"
+        echo "DEBUG: Hex dump = $(echo -n '${{ inputs.custom_headers }}' | xxd)"
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
