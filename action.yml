@@ -139,7 +139,8 @@ runs:
         fi
 
     - name: Upload MCP Server as Artifact
-      if: ${{ (inputs.create_pr != true && inputs.create_branch_and_commit != true) || (steps.branch_creation.outputs.success != 'true') }}
+      if: ${{ ((inputs.create_pr != true && inputs.create_branch_and_commit != true) || (steps.branch_creation.outputs.success != 'true')) && hashFiles('generated-mcp/**') != '' }}
+
       uses: actions/upload-artifact@v4
       with:
         name: generated-mcp-server
