@@ -64,7 +64,8 @@ runs:
           ghcr.io/codeglide/mcpgen:latest
 
     - name: Create PR / Branch
-      if: ${{ github.event_name == 'push' || inputs.create_pr == true || inputs.create_branch_and_commit == true }}
+      if: ${{ (github.event_name == 'push' || inputs.create_pr == true || inputs.create_branch_and_commit == true) && hashFiles('generated-mcp/**') != '' }}
+
       shell: bash
       id: branch_creation
       continue-on-error: true
