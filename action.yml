@@ -1,7 +1,7 @@
-name: "Snap Gen"
-description: "Run snapgen to create MCP server for APIs. Input dir contains API source code."
+name: "CodeGlide MCP Generator"
+description: "Run codeglide to create MCP server for APIs. Input dir contains API source code."
 branding:
-  icon: "chevron-right"
+  icon: "zap"
   color: "purple"
 
 inputs:
@@ -9,12 +9,8 @@ inputs:
     description: 'Input directory containing API source code (relative to workspace). Defaults to project root.'
     required: false
     default: '.'
-  custom_headers:
-    description: 'Custom headers to include in all API requests (JSON format, e.g., {"Authorization": "Bearer token", "X-API-Key": "key"})'
-    required: false
-    default: '{}'
   create_pr:
-    description: 'Create PR with generated code. Falls back to artifact upload if no push permissions.'
+    description: 'Create PR with generated code. Falls back to branch/commit or artifact upload if no push permissions.'
     required: false
     default: false
     type: boolean
@@ -23,11 +19,24 @@ inputs:
     required: false
     default: false
     type: boolean
+  custom_headers:
+    description: 'Custom headers to include in all API requests (JSON format, e.g., {"Authorization": "Bearer token", "X-API-Key": "key"})'
+    required: false
+    default: '{}'
+  check_api_changes:
+    description: 'Enable API change detection to only run MCP generation when API-related changes are detected'
+    required: false
+    default: true
+    type: boolean
+  changed_files:
+    description: 'List of changed files (newline-separated) to check for API changes'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
   steps:
-    - name: Run snapgen MCP gen
+    - name: Run Codeglide MCP gen
       shell: bash
       run: |
         mkdir -p "generated-mcp"
@@ -39,35 +48,40 @@ runs:
         else
           INPUT_PATH="${{ github.workspace }}/${{ inputs.input_directory }}"
         fi
-        echo "DEBUG: Raw input = '${{ inputs.custom_headers }}'"
-        echo "DEBUG: Input with escaped chars = $(printf '%q' '${{ inputs.custom_headers }}')"
-        echo "DEBUG: Character count = $(echo -n '${{ inputs.custom_headers }}' | wc -c)"
-        echo "DEBUG: Hex dump = $(echo -n '${{ inputs.custom_headers }}' | xxd)"
+        docker pull --quiet ghcr.io/codeglide/mcpgen:latest>/dev/null
         docker run --rm \
           -e GITHUB_REPOSITORY="${{ github.repository }}" \
           -e GITHUB_ACTOR="${{ github.actor }}" \
           -e GITHUB_ACTIONS=$GITHUB_ACTIONS \
+          -e GITHUB_EVENT_NAME="${{ github.event_name }}" \
+          -e GITHUB_BEFORE="${{ github.event.before }}" \
+          -e GITHUB_AFTER="${{ github.sha }}" \
+          -e CHECK_API_CHANGES="${{ inputs.check_api_changes }}" \
+          -e CHANGED_FILES="${{ inputs.changed_files }}" \
+          --env CUSTOM_HEADERS='${{ inputs.custom_headers }}' \
           -v "$INPUT_PATH:/app/input" \
           -v "${{ github.workspace }}/generated-mcp:/app/output" \
           ghcr.io/codeglide/mcpgen:latest
 
     - name: Create PR / Branch
-      if: ${{ inputs.create_pr || inputs.create_branch_and_commit }}
+      if: ${{ inputs.create_pr == true || inputs.create_branch_and_commit == true }}
       shell: bash
       id: branch_creation
       continue-on-error: true
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
+        echo "Creating branch and/or PR as requested..."
+        
         # Configure git with GitHub Actions identity
-        git config --global user.name "snapgen-[bot]"
-        git config --global user.email "snapgen-[bot]@users.noreply.github.com"
+        git config --global user.name "CodeGlide-[bot]"
+        git config --global user.email "codeglide-[bot]@users.noreply.github.com"
 
         # Create new branch
         BRANCH_NAME="feat/mcp-server-updated/$(date +%Y-%m-%d)--$(date +%H-%M-%S)"
         git checkout -b $BRANCH_NAME
         
-        # Determine MCP directory path based on input directory
+        # Determine MCP directory location
         if [[ "${{ inputs.input_directory }}" == "." ]] || [[ -z "${{ inputs.input_directory }}" ]]; then
           MCP_DIR="MCP"
         else
@@ -82,7 +96,7 @@ runs:
         
         # Commit and push
         git add "$MCP_DIR"
-        git commit -m "feat: snapgen Auto-generated MCP server code
+        git commit -m "feat: codeglide Auto-generated MCP server code
 
         Triggered by: @${{ github.actor }}"
         
@@ -93,25 +107,28 @@ runs:
           
           # Try to create PR if requested
           if [[ "${{ inputs.create_pr }}" == "true" ]]; then
-            if gh pr create \
-              --base "main" \
+            echo "Creating pull request..."
+            PR_URL=$(gh pr create \
+              --base "${{ github.ref_name }}" \
               --head "$BRANCH_NAME" \
-              --title "feat: Update MCP server with latest generated code" \
-              --body "Auto generated PR with MCP server code by snapgen.
+              --title "feat: Updated MCP server with latest generated code" \
+              --body "Auto generated PR with MCP server code by CodeGlide.
 
-              **Generated from:** \`${{ inputs.input_directory }}\`
-              **Generated by:** snapgen MCP Generator
-              **Triggered by:** @${{ github.actor }}" > /dev/null 2>&1; then
+              **Generated by:** CodeGlide MCP Generator
+              **Triggered by:** @${{ github.actor }}")
+            
+            if [ $? -eq 0 ]; then
               echo "Pull request created successfully!"
-              echo "View PR at: https://github.com/${{ github.repository }}/pull/..."
+              echo "View PR at: $PR_URL"
             else
               echo "Could not create PR (insufficient permissions)"
               echo "To create a PR manually, visit:"
-              echo "https://github.com/${{ github.repository }}/compare/main...$BRANCH_NAME"
+              echo "https://github.com/${{ github.repository }}/compare/${{ github.ref_name }}...$BRANCH_NAME"
             fi
           else
+            echo "Branch created successfully (no PR requested)"
             echo "To create a PR manually, visit:"
-            echo "https://github.com/${{ github.repository }}/compare/main...$BRANCH_NAME"
+            echo "https://github.com/${{ github.repository }}/compare/${{ github.ref_name }}...$BRANCH_NAME"
           fi
           echo "success=true" >> $GITHUB_OUTPUT
         else
@@ -120,9 +137,9 @@ runs:
           exit 1
         fi
 
-    - name: Upload MCP Server
-      if: ${{ !inputs.create_pr && !inputs.create_branch_and_commit || (steps.branch_creation.outputs.success != 'true') }}
+    - name: Upload MCP Server as Artifact
+      if: ${{ (inputs.create_pr != true && inputs.create_branch_and_commit != true) || (steps.branch_creation.outputs.success != 'true') }}
       uses: actions/upload-artifact@v4
       with:
-        name: generated-mcp
-        path: generated-mcp/ 
+        name: generated-mcp-server
+        path: generated-mcp/
