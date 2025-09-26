@@ -1,5 +1,5 @@
 name: "AIcodegen MCP Generator"
-description: "Run AIcodegen to create MCP server for APIs. Input dir contains API source code."
+description: "Run aicodegen to create MCP server for APIs. Input dir contains API source code."
 branding:
   icon: "zap"
   color: "purple"
@@ -24,7 +24,7 @@ inputs:
     required: false
     default: '{}'
   check_api_changes:
-    description: 'Enable API change detection to only run MCP generation when API-related changes are detected'
+    description: 'Enable API change detection'
     required: false
     default: true
     type: boolean
@@ -65,7 +65,6 @@ runs:
 
     - name: Create PR / Branch
       if: ${{ (github.event_name == 'push' || inputs.create_pr == true || inputs.create_branch_and_commit == true) && hashFiles('generated-mcp/**') != '' }}
-
       shell: bash
       id: branch_creation
       continue-on-error: true
@@ -140,7 +139,6 @@ runs:
 
     - name: Upload MCP Server as Artifact
       if: ${{ ((inputs.create_pr != true && inputs.create_branch_and_commit != true) || (steps.branch_creation.outputs.success != 'true')) && hashFiles('generated-mcp/**') != '' }}
-
       uses: actions/upload-artifact@v4
       with:
         name: generated-mcp-server
