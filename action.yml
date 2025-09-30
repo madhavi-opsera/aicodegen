@@ -1,5 +1,5 @@
-name: "AIcodegen MCP Generator"
-description: "Run aicodegen to create MCP server for APIs. Input dir contains API source code."
+name: "AICodegen MCP Generator"
+description: "Run codeglide to create MCP server for APIs. Input dir contains API source code."
 branding:
   icon: "zap"
   color: "purple"
@@ -28,10 +28,6 @@ inputs:
     required: false
     default: true
     type: boolean
-  changed_files:
-    description: 'List of changed files (newline-separated) to check for API changes'
-    required: false
-    default: ''
 
 runs:
   using: "composite"
@@ -57,7 +53,6 @@ runs:
           -e GITHUB_BEFORE="${{ github.event.before }}" \
           -e GITHUB_AFTER="${{ github.sha }}" \
           -e CHECK_API_CHANGES="${{ inputs.check_api_changes }}" \
-          -e CHANGED_FILES="${{ inputs.changed_files }}" \
           --env CUSTOM_HEADERS='${{ inputs.custom_headers }}' \
           -v "$INPUT_PATH:/app/input" \
           -v "${{ github.workspace }}/generated-mcp:/app/output" \
